@@ -19,23 +19,24 @@
     - $ sudo pdk new class install
     - $ sudo vim manifests/install.pp
 3. Review the class declaration — this provides Puppet with a unique name reference for the class we're creating:
-    - class mysql::install {
-    - }
+class mysql::install {
+}
+
 4. Set the resource type with a resource name:
-    - class mysql::install {
-    - package { 'mysql-server-5.7':
-    -  }
-    - }
+class mysql::install {
+  package { 'mysql-server-5.7':
+  }
+}
 
 - We're using the package resource because we are installing and otherwise managing a package. mysql-server-5.7 is the package name, which can also be supplied in the body of the resource declaration with the name attribute.
 
 5. Speaking of attributes, let's ensure we're actually downloading the package by supplying the ensure attribute. Attributes are ways of detailing the specifics of our resource. In this case, we just have to state that we want the package installed with the present value:
 
-- class mysql::install {
--  package { 'mysql-server-5.7':
--    ensure => 'present',
--  }
-- }
+class mysql::install {
+  package { 'mysql-server-5.7':
+    ensure => 'present',
+  }
+}
 
 6. Save and exit. We can now check for syntax errors with:
 
@@ -46,10 +47,10 @@
 - $ sudo pdk new class service
 - $ sudo vim manifests/service.pp
 
-- class mysql::service {
--  service { 'mysql':
--  }
-- }
+class mysql::service {
+ service { 'mysql':
+ }
+}
 
 2. Next, we want to supply our attributes. The ensure and enable attributes are fairly self-explanatory:
 
@@ -60,33 +61,81 @@ class mysql::service {
   }
 }
 
+- However, we also want to assign it the hasrestart parameter, which will allow for restarts under certain circumstances:
 
+class mysql::service {
+  service { 'mysql':
+    ensure     => 'running',
+    enable     => true,
+    hasrestart => true,
+  }
+}
 
+- Save and exit the file.
 
+3. Run the Puppet parser against the service.pp manifest:
 
+$ sudo puppet parser validate manifests/service.pp
 
+4. We're not quite done, however. We want to reopen the config class to ensure it triggers the service class to restart. To do this, we use the notify metaparameter, assigning it to the resource in our service class:
 
+$ sudo puppet parser validate manifests/config.pp
 
+class mysql::config {
+  file { '/etc/mysql/mysql.conf.d/mysqld.cnf':
+    ensure => 'file',
+    source => "puppet:///modules/mysql/mysqld.cnf",
+    mode   => '0644',
+    owner  => 'root',
+    group  => 'root',
+    notify => Service['mysql']
+  }
+}
 
+- Save and exit.
 
+5. We now need to tie our module together with an init.pp class. Generate the class:
 
+$ sudo pdk new class mysql
 
+6. Then use the class as a wrapper to contain our other classes:
 
+$ sudo vim manifests/init.pp
 
+class mysql {
+  include mysql::install
+  include mysql::config
+  include mysql::service
+}
 
+# Test the Module
+1. Log in to the Ubuntu node and bootstrap it to use Puppet:
 
+$ curl -k https://puppet.ec2.internal:8140/packages/current/install.bash | sudo bash
 
+Note: It may not show it, but this command will prompt for a password.
 
+2. Approve the node on the master:
 
+$ sudo puppetserver ca sign --all
 
+3. We now need to map our mysql module to our node1 node. First, let's open up the main manifest — or where we perform all these mappings:
 
+$ sudo vim /etc/puppetlabs/code/environments/production/manifests/site.pp
 
+4. Next, let's add a node definition and assign our module:
 
+Note: Add the following at the bottom of the file.
 
+node node1.ec2.internal {
+  include mysql
+}
 
+Save and exit.
 
+5. Return to the node1 node and test the module:
 
-
+$ sudo puppet agent -t
 
 
  # HIERA -
