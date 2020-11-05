@@ -6,7 +6,7 @@
 1. ssh cloud_user@PUBLIC_IP_ADDRESS
 - Create an Installation Class:
 1. Generate the mysql module:
-    - cd /etc/puppetlabs/code/environments/production/modules
+    - cd /etc/puppetlabs/code/environments/production/moddles
     - sudo pdk new module mysql
 
     - Puppet Forge username: clouduser
@@ -42,14 +42,16 @@ class mysql::install {
 
 -  sudo puppet parser validate manifests/install.pp
 
-# Create a Configuration Class
+# Create a Service Class
+
 1. Finally, we want to make sure the mysqld service is started, enabled to start at boot, and is set to restart whenever there are changes made to our config file. Let's first create the manifest and define our resource type:
-- $ sudo pdk new class service
-- $ sudo vim manifests/service.pp
+
+$ sudo pdk new class service
+$ sudo vim manifests/service.pp
 
 class mysql::service {
- service { 'mysql':
- }
+  service { 'mysql':
+  }
 }
 
 2. Next, we want to supply our attributes. The ensure and enable attributes are fairly self-explanatory:
@@ -60,39 +62,6 @@ class mysql::service {
     enable => true,
   }
 }
-
-- However, we also want to assign it the hasrestart parameter, which will allow for restarts under certain circumstances:
-
-class mysql::service {
-  service { 'mysql':
-    ensure     => 'running',
-    enable     => true,
-    hasrestart => true,
-  }
-}
-
-- Save and exit the file.
-
-3. Run the Puppet parser against the service.pp manifest:
-
-$ sudo puppet parser validate manifests/service.pp
-
-4. We're not quite done, however. We want to reopen the config class to ensure it triggers the service class to restart. To do this, we use the notify metaparameter, assigning it to the resource in our service class:
-
-$ sudo puppet parser validate manifests/config.pp
-
-class mysql::config {
-  file { '/etc/mysql/mysql.conf.d/mysqld.cnf':
-    ensure => 'file',
-    source => "puppet:///modules/mysql/mysqld.cnf",
-    mode   => '0644',
-    owner  => 'root',
-    group  => 'root',
-    notify => Service['mysql']
-  }
-}
-
-- Save and exit.
 
 5. We now need to tie our module together with an init.pp class. Generate the class:
 
