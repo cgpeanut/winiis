@@ -21,8 +21,12 @@
 3. Review the class declaration — this provides Puppet with a unique name reference for the class we're creating:
     - class mysql::install {
     - }
-
-
+4. Set the resource type with a resource name:
+    - class mysql::install {
+    - package { 'mysql-server-5.7':
+    -  }
+    - }
+- We're using the package resource because we are installing and otherwise managing a package. mysql-server-5.7 is the package name, which can also be supplied in the body of the resource declaration with the name attribute.
 
 
 
