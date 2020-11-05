@@ -19,8 +19,8 @@
     - $ sudo pdk new class install
     - $ sudo vim manifests/install.pp
 3. Review the class declaration — this provides Puppet with a unique name reference for the class we're creating:
-    1. class mysql::install {
-    2. }
+    class mysql::install {
+    }
 
 
 
