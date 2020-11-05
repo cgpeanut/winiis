@@ -26,18 +26,39 @@
     - package { 'mysql-server-5.7':
     -  }
     - }
+
 - We're using the package resource because we are installing and otherwise managing a package. mysql-server-5.7 is the package name, which can also be supplied in the body of the resource declaration with the name attribute.
 
+5. Speaking of attributes, let's ensure we're actually downloading the package by supplying the ensure attribute. Attributes are ways of detailing the specifics of our resource. In this case, we just have to state that we want the package installed with the present value:
 
+- class mysql::install {
+-  package { 'mysql-server-5.7':
+-    ensure => 'present',
+-  }
+- }
 
+6. Save and exit. We can now check for syntax errors with:
 
+-  sudo puppet parser validate manifests/install.pp
 
+# Create a Configuration Class
+1. Finally, we want to make sure the mysqld service is started, enabled to start at boot, and is set to restart whenever there are changes made to our config file. Let's first create the manifest and define our resource type:
+- $ sudo pdk new class service
+- $ sudo vim manifests/service.pp
 
+- class mysql::service {
+-  service { 'mysql':
+-  }
+- }
 
+2. Next, we want to supply our attributes. The ensure and enable attributes are fairly self-explanatory:
 
-
-
-
+class mysql::service {
+  service { 'mysql':
+    ensure => 'running',
+    enable => true,
+  }
+}
 
 
 
