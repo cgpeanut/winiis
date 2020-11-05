@@ -14,6 +14,54 @@
     - What license does this module code fall under?: Apache-2.0
     - What operating systems does this module support?: RedHat based Linux, Debian based Linux
     - Metadata will be generated based on this information: Yes
+2. Generate the open the install.pp manifest:
+    - $ cd mysql
+    - $ sudo pdk new class install
+    - $ sudo vim manifests/install.pp
+3. Review the class declaration — this provides Puppet with a unique name reference for the class we're creating:
+    1. class mysql::install {
+    2. }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
  # HIERA -
